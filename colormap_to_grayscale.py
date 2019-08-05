@@ -227,7 +227,7 @@ if __name__ == '__main__':
               ' (default: 255).'),
         )
     parser.add_argument(
-        '--max-dist',
+        '-m', '--max-dist',
         type=float,
         default=0.05,
         help=('Colors in the image which are not in the cmap (!) might be'
@@ -242,7 +242,7 @@ if __name__ == '__main__':
               ),
         )
     parser.add_argument(
-        '--debug-figure',
+        '-d', '--debug-figure',
         action='store_true',
         help='Save a debug figure.')
     args = parser.parse_args()
