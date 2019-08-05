@@ -88,7 +88,8 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
         image)))
     image_cmap_dist = image_grayscale_and_dist[:, 0, :]
     image_grayscale = image_grayscale_and_dist[:, 1, :]
-    image_grayscale[image_cmap_dist > max_dist] = np.nan
+    if max_dist >= 0:
+        image_grayscale[image_cmap_dist > max_dist] = np.nan
     return image_grayscale, image_cmap_dist
 
 
@@ -211,6 +212,7 @@ if __name__ == '__main__':
               ' Colors further away are transformed into NaN values.'
               ' Distances are computed in the RGB space,'
               ' with values between 0 and 1.'
+              ' Negative values ignore this threshold.'
               ' (Default: 0.05)'
               ),
         )
