@@ -35,8 +35,8 @@ def resize_cmap(cmap, cmap_size):
 
     if len(cmap) < cmap_size:
         cmap_tck, cmap_u = sinterp.splprep(cmap.T, s=0)
-        # TODO: handle repeated colors in the cmap
-        # (splrep throws ValueError: Invalid inputs.)
+        # When the colormap contains repeated colors,
+        # splrep throws ValueError: Invalid inputs.
         cmap = sinterp.splev(target_cmap_u, cmap_tck)
         cmap = np.array(cmap).T
 
@@ -91,7 +91,82 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
     image_grayscale[image_cmap_dist > max_dist] = np.nan
     return image_grayscale, image_cmap_dist
 
+
+def plot_debug_figure(image, cmap, image_grayscale, image_cmap_dist, save_to):
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    plt.ioff()
+    plt.figure(clear=True, figsize=[12, 6])
+    gs = mpl.gridspec.GridSpec(
+        2, 4,
+        left=.01, right=.99,
+        top=.94, bottom=.08,
+        hspace=0,
+        wspace=0.1,
+        height_ratios=[1, .05],
+        )
+    ax_input  = plt.subplot(gs[0, 0])
+    cax_input = plt.subplot(gs[1, 0])
+    ax_orig   = plt.subplot(gs[0, 1])
+    cax_orig  = plt.subplot(gs[1, 1])
+    ax_gray   = plt.subplot(gs[0, 2])
+    cax_gray  = plt.subplot(gs[1, 2])
+    ax_dist   = plt.subplot(gs[0, 3])
+    cax_dist  = plt.subplot(gs[1, 3])
+
+    # original cmap
+    rgb_names = ('red', 'green', 'blue')
+    x = np.linspace(0, 1, len(cmap))
+    cdict = {k: list(zip(x, v, v))
+             for k, v in zip(rgb_names, cmap.T)}
+    cm_orig = mpl.colors.LinearSegmentedColormap('cm_orig', cdict)
+
+    # gray cmap with red NaNs
+    cm_gray = mpl.cm.gray
+    cm_gray.set_bad('r')
+
+    imshow_kw = dict(
+        origin='upper',
+        )
+    cbar_kw = dict(
+        orientation='horizontal',
+        aspect=1/40,
+        )
+
+    # plot input image and cmap
+    ax_input.imshow(image, **imshow_kw)
+    height = len(cmap) // 10
+    cmap_2d = np.repeat(cmap, height, axis=0).reshape(-1, height, 3).swapaxes(0, 1)
+    cax_input.imshow(cmap_2d, **imshow_kw)
+
+    # plot rendered grayscale and image-cmap distance
+    im_orig = ax_orig.imshow(image_grayscale, cmap=cm_orig, vmin=0, vmax=1, **imshow_kw)
+    im_gray = ax_gray.imshow(image_grayscale, cmap=cm_gray, vmin=0, vmax=1, **imshow_kw)
+    im_dist = ax_dist.imshow(image_cmap_dist, cmap=cm_gray, vmin=0, **imshow_kw)
+
+    # add colorbars
+    cb_orig = plt.colorbar(im_orig, cax=cax_orig, **cbar_kw)
+    cb_gray = plt.colorbar(im_gray, cax=cax_gray, **cbar_kw)
+    cb_dist = plt.colorbar(im_dist, cax=cax_dist, **cbar_kw)
+
+    # set ticks
+    for ax in (ax_input, cax_input, ax_orig, ax_gray, ax_dist):
+        ax.set_xticks([])
+        ax.set_yticks([])
+    for cb in (cb_orig, cb_gray):
+        cb.set_ticks([0, 1])
+
+    # set titles
+    ax_input.set_title('Inputs')
+    ax_orig.set_title('Rendered with colormap')
+    ax_gray.set_title('Rendered in grayscale')
+    ax_dist.set_title('Distance to colormap')
+
+    plt.savefig(save_to)
+
+
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(
         description='Convert colormap')
     parser.add_argument(
@@ -131,6 +206,10 @@ if __name__ == '__main__':
         default=255,
         help='size of the cmap used for the inversion (default: 255)',
         )
+    parser.add_argument(
+        '--debug-figure',
+        action='store_true',
+        help='')
     args = parser.parse_args()
 
     image = load_image_rgb(args.image)
@@ -139,23 +218,7 @@ if __name__ == '__main__':
     cmap = resize_cmap(cmap, args.cmap_size)
     image_grayscale, image_cmap_dist = cmap_to_grayscale(cmap, image, max_dist=args.max_dist)
 
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-    plt.ioff()
-
-    plt.clf()
-    plt.step(cmap[:, 0], 'r')
-    plt.step(cmap[:, 1], 'g')
-    plt.step(cmap[:, 2], 'b')
-    plt.savefig(f'{args.cmap}_cmap.pdf')
-
-    plt.clf()
-    gray = mpl.cm.gray
-    gray.set_bad('r')
-    plt.imshow(image_grayscale, origin='upper', cmap=gray)
-    plt.savefig(f'{args.image}_gray.pdf')
-
-    plt.clf()
-    plt.imshow(image_cmap_dist, origin='upper', cmap='gray')
-    plt.colorbar()
-    plt.savefig(f'{args.image}_dist.pdf')
+    if args.debug_figure:
+        plot_debug_figure(
+            image, cmap, image_grayscale, image_cmap_dist,
+            f'{args.image}_debug.pdf')
