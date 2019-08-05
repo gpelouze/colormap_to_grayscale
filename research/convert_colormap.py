@@ -168,48 +168,56 @@ def plot_debug_figure(image, cmap, image_grayscale, image_cmap_dist, save_to):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Convert colormap')
+        description=(
+            'Convert an image rendered with a colormap (cmap) to grayscale.'
+            ' This allows the image to be later rendered with any colormap.')
+        )
     parser.add_argument(
         'cmap',
         type=str,
-        help='image containing the original colormap',
+        help='Image of the colormap.',
         )
     parser.add_argument(
         'image',
         type=str,
-        help='image to convert',
+        help='Image to convert, rendered with cmap.',
         )
     parser.add_argument(
-        '--target-cmap',
+        '-o', '--output-image',
         type=str,
-        default='gray',
-        help=('matplotlib colormap name, or image containing the target '
-              'colormap (default: gray)')
+        help='Grayscale image, saved as PNG.',
         )
     parser.add_argument(
         '--cmap-orientation',
         type=str,
         default='auto',
-        help=('orientation of the original cmap image '
-              '(auto, vertical, or horizontal)'),
-        )
-    parser.add_argument(
-        '--max-dist',
-        type=float,
-        default=0.05,
-        help=('maximum distance (0-1) in the RGB space between a color in the '
-              'image and the matched color in the colormap (default: 0.05)'),
+        help=('Orientation of cmap (auto, vertical, or horizontal).'),
         )
     parser.add_argument(
         '--cmap-size',
         type=int,
         default=255,
-        help='size of the cmap used for the inversion (default: 255)',
+        help=('Size of the internal cmap used for the inversion'
+              ' (default: 255).'),
+        )
+    parser.add_argument(
+        '--max-dist',
+        type=float,
+        default=0.05,
+        help=('Colors in the image which are not in the cmap (!) might be'
+              ' inverted into nonsensical values.'
+              ' This option sets the maximum distance between a color in the'
+              ' image and colors in the cmap.'
+              ' Colors further away are transformed into NaN values.'
+              ' Distances are computed in the RGB space,'
+              ' with values between 0 and 1.'
+              ' (Default: 0.05)'
+              ),
         )
     parser.add_argument(
         '--debug-figure',
         action='store_true',
-        help='')
+        help='Save a debug figure.')
     args = parser.parse_args()
 
     image = load_image_rgb(args.image)
