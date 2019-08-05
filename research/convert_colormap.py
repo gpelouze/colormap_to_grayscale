@@ -2,6 +2,7 @@
 
 import argparse
 import functools
+import os
 
 from PIL import Image
 import numpy as np
@@ -92,6 +93,30 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
         image_grayscale[image_cmap_dist > max_dist] = np.nan
     return image_grayscale, image_cmap_dist
 
+def save_image_png(image, filename):
+    image = (image_grayscale * 255).astype(np.uint8)
+    image = Image.fromarray(image)
+    assert image.mode == 'L'
+    image.save(filename)
+
+def save_image_npy(image, filename):
+    np.save(filename, image, allow_pickle=False)
+
+def save_image_fits(image, filename):
+    from astropy.io import fits
+    hdulist = fits.HDUList(fits.PrimaryHDU(image))
+    hdulist.writeto(filename, overwrite=True)
+
+def save_image(img, filename):
+    _, ext = os.path.splitext(filename)
+    if ext == '.png':
+        save_image_png(img, filename)
+    elif ext == '.npy':
+        save_image_npy(img, filename)
+    elif ext == '.fits':
+        save_image_fits(img, filename)
+    else:
+        raise ValueError('Unsupported output extension: ' + ext)
 
 def plot_debug_figure(image, cmap, image_grayscale, image_cmap_dist, save_to):
     import matplotlib as mpl
@@ -186,7 +211,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-o', '--output-image',
         type=str,
-        help='Grayscale image, saved as PNG.',
+        help='Output grayscale image (.png, .npy, or .fits).'
         )
     parser.add_argument(
         '--cmap-orientation',
@@ -227,6 +252,11 @@ if __name__ == '__main__':
     cmap = cmap_to_1d(cmap, args.cmap_orientation)
     cmap = resize_cmap(cmap, args.cmap_size)
     image_grayscale, image_cmap_dist = cmap_to_grayscale(cmap, image, max_dist=args.max_dist)
+
+    if not args.output_image:
+        path, _ = os.path.splitext(args.image)
+        args.output_image = path + '-grayscale.png'
+    save_image(image_grayscale, args.output_image)
 
     if args.debug_figure:
         path, _ = os.path.splitext(args.image)
