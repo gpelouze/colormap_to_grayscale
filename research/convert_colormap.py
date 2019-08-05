@@ -29,6 +29,24 @@ def cmap_to_1d(cmap, cmap_orientation):
         return np.median(cmap, axis=0)
     raise ValueError('Unknown cmap orientation: {}'.format(cmap_orientation))
 
+def resize_cmap(cmap, cmap_size):
+    target_cmap_u = np.linspace(0, 1, cmap_size)
+
+    if len(cmap) < cmap_size:
+        cmap_tck, cmap_u = sinterp.splprep(cmap.T, s=0)
+        # TODO: handle repeated colors in the cmap
+        # (splrep throws ValueError: Invalid inputs.)
+        cmap = sinterp.splev(target_cmap_u, cmap_tck)
+        cmap = np.array(cmap).T
+
+    if len(cmap) > cmap_size:
+        cmap_u = np.linspace(0, 1, len(cmap))
+        cmap_interp = sinterp.interp1d(cmap_u, cmap.T)
+        cmap = cmap_interp(target_cmap_u).T
+
+    assert cmap.shape == (cmap_size, 3)
+    return cmap
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -68,26 +86,14 @@ if __name__ == '__main__':
         '--cmap-size',
         type=int,
         default=255,
-        help='size of the cmap used for the inversion (default: 255)',
+        help='size of the cmap used for the inversion (default: 255)',
         )
     args = parser.parse_args()
 
     image = load_image_rgb(args.image)
     cmap = load_image_rgb(args.cmap)
     cmap = cmap_to_1d(cmap, args.cmap_orientation)
-
-    target_cmap_u = np.linspace(0, 1, args.cmap_size)
-    if len(cmap) < args.cmap_size:
-        cmap_tck, cmap_u = sinterp.splprep(cmap.T, s=0)
-        # TODO: handle repeated colors in the cmap
-        # (splrep throws ValueError: Invalid inputs.)
-        cmap = sinterp.splev(target_cmap_u, cmap_tck)
-        cmap = np.array(cmap).T
-    if len(cmap) > args.cmap_size:
-        cmap_u = np.linspace(0, 1, len(cmap))
-        cmap_interp = sinterp.interp1d(cmap_u, cmap.T)
-        cmap = cmap_interp(target_cmap_u).T
-    assert cmap.shape == (args.cmap_size, 3)
+    cmap = resize_cmap(cmap, args.cmap_size)
 
     ny, nx, _ = image.shape
     nu, _ = cmap.shape
