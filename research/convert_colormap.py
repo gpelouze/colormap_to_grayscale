@@ -48,7 +48,7 @@ def resize_cmap(cmap, cmap_size):
     assert cmap.shape == (cmap_size, 3)
     return cmap
 
-def distance_to_cmap(cmap, arr, max_dist=None):
+def distance_to_cmap(cmap, arr):
     ''' Compute the color distance between a RGB 1D array and a color map '''
     nu, _ = cmap.shape
     na, _ = arr.shape
@@ -56,16 +56,40 @@ def distance_to_cmap(cmap, arr, max_dist=None):
     dist = np.sqrt(np.sum(dist_rgb**2, axis=-1))
     min_dist = np.min(dist, axis=-1)
     argmin_dist = np.argmin(dist, axis=-1) / (nu - 1)
-    argmin_dist[min_dist > max_dist] = np.nan
     return min_dist, argmin_dist
 
-def invert_cmap(cmap, image, max_dist=None):
-    image_u_dist = np.array(list(map(
-        functools.partial(distance_to_cmap, cmap, max_dist=max_dist),
+def cmap_to_grayscale(cmap, image, max_dist=None):
+    ''' Convert an image rendered with a cmap to grayscale
+
+    Parameters
+    ==========
+    cmap : (Nc, 3) ndarray
+        The colormap.
+    image : (Nx, Ny, 3) ndarray
+        The image rendered with cmap.
+    max_dist : float or None (default: None)
+        The maximum distance between a color in the image and the colormap.
+        Colors which are further away from the colormap than this distance are
+        not inverted, and set to NaN.
+        The distance is computed as:
+            sqrt((R_cmap - R_img)**2 + (G_cmap - G_img)**2 + (B_cmap - B_img)**2)
+            where R, G, and B are the RGB values between 0 and 1.
+
+    Returns
+    =======
+    image_grayscale (Nx, Ny)
+        The image converted into grayscale, with values between 0 and 1.
+        Contains NaN values where image_cmap_dist > max_dist.
+    image_cmap_dist (Nx, Ny)
+        The distance between the image colors and the cmap.
+    '''
+    image_grayscale_and_dist = np.array(list(map(
+        functools.partial(distance_to_cmap, cmap),
         image)))
-    image_dist = image_u_dist[:, 0, :]
-    image_u = image_u_dist[:, 1, :]
-    return image_u, image_dist
+    image_cmap_dist = image_grayscale_and_dist[:, 0, :]
+    image_grayscale = image_grayscale_and_dist[:, 1, :]
+    image_grayscale[image_cmap_dist > max_dist] = np.nan
+    return image_grayscale, image_cmap_dist
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -113,7 +137,7 @@ if __name__ == '__main__':
     cmap = load_image_rgb(args.cmap)
     cmap = cmap_to_1d(cmap, args.cmap_orientation)
     cmap = resize_cmap(cmap, args.cmap_size)
-    image_u, image_dist = invert_cmap(cmap, image, max_dist=args.max_dist)
+    image_grayscale, image_cmap_dist = cmap_to_grayscale(cmap, image, max_dist=args.max_dist)
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
@@ -128,10 +152,10 @@ if __name__ == '__main__':
     plt.clf()
     gray = mpl.cm.gray
     gray.set_bad('r')
-    plt.imshow(image_u, origin='upper', cmap=gray)
+    plt.imshow(image_grayscale, origin='upper', cmap=gray)
     plt.savefig(f'{args.image}_gray.pdf')
 
     plt.clf()
-    plt.imshow(image_dist, origin='upper', cmap='gray')
+    plt.imshow(image_cmap_dist, origin='upper', cmap='gray')
     plt.colorbar()
     plt.savefig(f'{args.image}_dist.pdf')
