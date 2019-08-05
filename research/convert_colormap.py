@@ -97,11 +97,12 @@ if __name__ == '__main__':
 
     ny, nx, _ = image.shape
     nu, _ = cmap.shape
-    dist_rgb = cmap - image.reshape(ny, nx, 1, 3) # ny, nx, nu, 3
+    dist_rgb = cmap.astype(np.float16) - image.astype(np.float16).reshape(ny, nx, 1, 3) # ny, nx, nu, 3
     dist = np.sqrt(np.sum(dist_rgb**2, axis=-1)) # ny, nx, nu
     image_dist = np.min(dist, axis=-1) # ny, nx
     image_u = np.argmin(dist, axis=-1) / (nu - 1) # ny, nx
     image_u[image_dist > args.max_dist] = np.nan
+    image_dist = image_dist.astype(np.float64)
 
 
     import matplotlib as mpl
