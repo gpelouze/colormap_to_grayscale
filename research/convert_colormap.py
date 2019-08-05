@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import functools
 
 from PIL import Image
 import numpy as np
@@ -47,6 +48,24 @@ def resize_cmap(cmap, cmap_size):
     assert cmap.shape == (cmap_size, 3)
     return cmap
 
+def distance_to_cmap(cmap, arr, max_dist=None):
+    ''' Compute the color distance between a RGB 1D array and a color map '''
+    nu, _ = cmap.shape
+    na, _ = arr.shape
+    dist_rgb = cmap - arr.reshape(na, 1, 3) # nu, na, 3
+    dist = np.sqrt(np.sum(dist_rgb**2, axis=-1))
+    min_dist = np.min(dist, axis=-1)
+    argmin_dist = np.argmin(dist, axis=-1) / (nu - 1)
+    argmin_dist[min_dist > max_dist] = np.nan
+    return min_dist, argmin_dist
+
+def invert_cmap(cmap, image, max_dist=None):
+    image_u_dist = np.array(list(map(
+        functools.partial(distance_to_cmap, cmap, max_dist=max_dist),
+        image)))
+    image_dist = image_u_dist[:, 0, :]
+    image_u = image_u_dist[:, 1, :]
+    return image_u, image_dist
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -94,16 +113,7 @@ if __name__ == '__main__':
     cmap = load_image_rgb(args.cmap)
     cmap = cmap_to_1d(cmap, args.cmap_orientation)
     cmap = resize_cmap(cmap, args.cmap_size)
-
-    ny, nx, _ = image.shape
-    nu, _ = cmap.shape
-    dist_rgb = cmap.astype(np.float16) - image.astype(np.float16).reshape(ny, nx, 1, 3) # ny, nx, nu, 3
-    dist = np.sqrt(np.sum(dist_rgb**2, axis=-1)) # ny, nx, nu
-    image_dist = np.min(dist, axis=-1) # ny, nx
-    image_u = np.argmin(dist, axis=-1) / (nu - 1) # ny, nx
-    image_u[image_dist > args.max_dist] = np.nan
-    image_dist = image_dist.astype(np.float64)
-
+    image_u, image_dist = invert_cmap(cmap, image, max_dist=args.max_dist)
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
