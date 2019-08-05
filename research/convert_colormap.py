@@ -95,8 +95,8 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
 
 def plot_debug_figure(image, cmap, image_grayscale, image_cmap_dist, save_to):
     import matplotlib as mpl
+    mpl.use('pdf')
     import matplotlib.pyplot as plt
-    plt.ioff()
     plt.figure(clear=True, figsize=[12, 6])
     gs = mpl.gridspec.GridSpec(
         2, 4,
@@ -229,6 +229,7 @@ if __name__ == '__main__':
     image_grayscale, image_cmap_dist = cmap_to_grayscale(cmap, image, max_dist=args.max_dist)
 
     if args.debug_figure:
+        path, _ = os.path.splitext(args.image)
+        filename = path + '-debug.pdf'
         plot_debug_figure(
-            image, cmap, image_grayscale, image_cmap_dist,
-            f'{args.image}_debug.pdf')
+            image, cmap, image_grayscale, image_cmap_dist, filename)
