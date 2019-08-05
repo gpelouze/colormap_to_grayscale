@@ -107,7 +107,9 @@ def save_image_fits(image, filename):
     hdulist = fits.HDUList(fits.PrimaryHDU(image))
     hdulist.writeto(filename, overwrite=True)
 
-def save_image(img, filename):
+def save_image(img, filename, overwrite=False):
+    if os.path.exists(filename) and not overwrite:
+        raise OSError('file exists: ' + filename)
     _, ext = os.path.splitext(filename)
     if ext == '.png':
         save_image_png(img, filename)
@@ -214,6 +216,11 @@ if __name__ == '__main__':
         help='Output grayscale image (.png, .npy, or .fits).'
         )
     parser.add_argument(
+        '-O', '--overwrite',
+        action='store_true',
+        help='Overwrite output_image.'
+        )
+    parser.add_argument(
         '--cmap-orientation',
         type=str,
         default='auto',
@@ -256,7 +263,7 @@ if __name__ == '__main__':
     if not args.output_image:
         path, _ = os.path.splitext(args.image)
         args.output_image = path + '-grayscale.png'
-    save_image(image_grayscale, args.output_image)
+    save_image(image_grayscale, args.output_image, overwrite=args.overwrite)
 
     if args.debug_figure:
         path, _ = os.path.splitext(args.image)
