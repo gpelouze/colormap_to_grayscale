@@ -7,7 +7,7 @@ colormap, converted back into grayscale.](example/overview.png)
 
 ## Installation
 
-Simply call `colormap_to_grayscale.py` from the command line.
+Simply call [`colormap_to_grayscale.py`](colormap_to_grayscale.py) from the command line.
 (You may add it to your `$PATH`, or run `./colormap_to_grayscale.py` from where
 you saved it.)
 
@@ -18,7 +18,7 @@ and [scipy](https://www.scipy.org/scipylib/index.html).
 
 ## Example
 
-Sample inputs and output are given in the [examples/](examples/) directory.
+Sample inputs and output are given in the [`example/`](example/) directory.
 
 The output is generated with the following command:
 
