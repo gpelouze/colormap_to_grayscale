@@ -2,6 +2,9 @@
 
 Convert an image rendered with a colormap to grayscale.
 
+![Sample input and output: scipy.misc.face() image rendered with the jet
+colormap, then converted back into grayscale.](example.png)
+
 ## Installation
 
 Just use `colormap_to_grayscale.py`.
