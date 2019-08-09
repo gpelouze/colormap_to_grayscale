@@ -8,10 +8,9 @@ colormap, converted back into grayscale.](example/overview.png)
 ## Installation
 
 Simply call [`colormap_to_grayscale.py`](colormap_to_grayscale.py) from the command line.
-(You may add it to your `$PATH`, or run `./colormap_to_grayscale.py` from where
-you saved it.)
+You may add it to your `$PATH`, or directly run `./colormap_to_grayscale.py`.
 
-This script depends on standard libraries:
+This script depends on fairly standard libraries:
 [PIL](https://python-pillow.org),
 [numpy](https://www.numpy.org),
 and [scipy](https://www.scipy.org/scipylib/index.html).
