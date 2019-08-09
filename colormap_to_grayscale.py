@@ -108,7 +108,8 @@ def save_image_fits(image, filename):
 
 def save_image(img, filename, overwrite=False):
     if os.path.exists(filename) and not overwrite:
-        raise OSError('file exists: ' + filename)
+        msg = "output file '{}' exists, use -O to overwrite it"
+        raise OSError(msg.format(filename))
     _, ext = os.path.splitext(filename)
     if ext == '.png':
         save_image_png(img, filename)
@@ -254,7 +255,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if os.path.exists(args.output_image) and not args.overwrite:
-        raise OSError('file exists: ' + args.output_image)
+        msg = "output file '{}' exists, use -O to overwrite it"
+        raise OSError(msg.format(args.output_image))
 
     image = load_image_rgb(args.image)
     cmap = load_image_rgb(args.cmap)
