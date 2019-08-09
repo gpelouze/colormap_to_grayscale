@@ -94,9 +94,8 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
     return image_grayscale, image_cmap_dist
 
 def save_image_png(image, filename):
-    image = (image_grayscale * 255).astype(np.uint8)
+    image = (image * 255).astype(np.uint8)
     image = Image.fromarray(image)
-    assert image.mode == 'L'
     image.save(filename)
 
 def save_image_npy(image, filename):
