@@ -253,6 +253,9 @@ if __name__ == '__main__':
         help='Save a debug figure.')
     args = parser.parse_args()
 
+    if os.path.exists(args.output_image) and not args.overwrite:
+        raise OSError('file exists: ' + args.output_image)
+
     image = load_image_rgb(args.image)
     cmap = load_image_rgb(args.cmap)
     cmap = cmap_to_1d(cmap, args.cmap_orientation)
