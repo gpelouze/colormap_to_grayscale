@@ -2,8 +2,8 @@
 
 Convert an image rendered with a colormap to grayscale.
 
-![Sample input and output: scipy.misc.face() image rendered with the jet
-colormap, then converted back into grayscale.](example.png)
+![Sample input and output: image rendered with the jet
+colormap, converted back into grayscale.](example/overview.png)
 
 ## Installation
 
@@ -15,6 +15,16 @@ This script depends on standard libraries:
 [PIL](https://python-pillow.org),
 [numpy](https://www.numpy.org),
 and [scipy](https://www.scipy.org/scipylib/index.html).
+
+## Example
+
+Sample inputs and output are given in the [examples/](examples/) directory.
+
+The output is generated with the following command:
+
+~~~bash
+./colormap_to_grayscale.py example/input_cmap.png example/input_image.png -o example/output.png
+~~~
 
 ## Usage
 
