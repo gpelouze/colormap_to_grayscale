@@ -7,9 +7,18 @@ colormap, then converted back into grayscale.](example.png)
 
 ## Installation
 
-Just use `colormap_to_grayscale.py`.
+Simply call `colormap_to_grayscale.py` from the command line.
+(You may add it to your `$PATH`, or run `./colormap_to_grayscale.py` from where
+you saved it.)
+
+This script depends on standard libraries:
+[PIL](https://python-pillow.org),
+[numpy](https://www.numpy.org),
+and [scipy](https://www.scipy.org/scipylib/index.html).
 
 ## Usage
+
+Use `colormap_to_grayscale.py` from the command line:
 
 ~~~
 usage: colormap_to_grayscale.py [-h] [-o OUTPUT_IMAGE] [-O]
