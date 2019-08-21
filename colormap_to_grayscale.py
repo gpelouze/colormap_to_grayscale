@@ -213,7 +213,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '-o', '--output-image',
         type=str,
-        help='Output grayscale image (.png, .npy, or .fits).'
+        help=('Output grayscale image (.png, .npy, or .fits;'
+              ' default: <image>-grayscale.png).'),
         )
     parser.add_argument(
         '-O', '--overwrite',
