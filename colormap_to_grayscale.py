@@ -94,6 +94,9 @@ def cmap_to_grayscale(cmap, image, max_dist=None):
     return image_grayscale, image_cmap_dist
 
 def save_image_png(image, filename):
+    missing_pixels = np.isnan(image)
+    image = np.stack((image, ~missing_pixels))
+    image = np.moveaxis(image, 0, -1)
     image = (image * 255).astype(np.uint8)
     image = Image.fromarray(image)
     image.save(filename)
@@ -242,7 +245,8 @@ if __name__ == '__main__':
               ' inverted into nonsensical values.'
               ' This option sets the maximum distance between a color in the'
               ' image and colors in the cmap.'
-              ' Colors further away are transformed into NaN values.'
+              ' Colors further away are transformed into NaN values'
+              ' (rendered as transparent pixels in PNG images).'
               ' Distances are computed in the RGB space,'
               ' with values between 0 and 1.'
               ' Negative values ignore this threshold.'
