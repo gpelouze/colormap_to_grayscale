@@ -254,6 +254,10 @@ if __name__ == '__main__':
         help='Save a debug figure.')
     args = parser.parse_args()
 
+    if not args.output_image:
+        path, _ = os.path.splitext(args.image)
+        args.output_image = path + '-grayscale.png'
+
     if os.path.exists(args.output_image) and not args.overwrite:
         msg = "output file '{}' exists, use -O to overwrite it"
         raise OSError(msg.format(args.output_image))
@@ -264,9 +268,6 @@ if __name__ == '__main__':
     cmap = resize_cmap(cmap, args.cmap_size)
     image_grayscale, image_cmap_dist = cmap_to_grayscale(cmap, image, max_dist=args.max_dist)
 
-    if not args.output_image:
-        path, _ = os.path.splitext(args.image)
-        args.output_image = path + '-grayscale.png'
     save_image(image_grayscale, args.output_image, overwrite=args.overwrite)
 
     if args.debug_figure:
